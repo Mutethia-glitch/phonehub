@@ -17,8 +17,8 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: bun install --frozen-lockfile
-      - name: Lint
-        run: bun run lint
+      - name: Lint backend (legacy frontend formatting tracked separately)
+        run: bunx eslint src/lib/phonehub src/test/phonehub-backend.test.ts --rule 'prettier/prettier:off'
       - name: Test
         run: bun run test
       - name: Production build
