@@ -26,8 +26,8 @@ function mapProduct(p: DbProduct): Product {
     shape, stockQty: p.stock_qty, ...(p.image_url ? { imageUrl:p.image_url } : {})
   };
 }
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] as string | undefined;
+const supabaseKey = import.meta.env['VITE_SUPABASE_ANON_KEY'] as string | undefined;
 const configured = Boolean(supabaseUrl && supabaseKey && !supabaseUrl.includes('YOUR-PROJECT'));
 const config = configured ? { url:supabaseUrl!, anonKey:supabaseKey! } : null;
 
