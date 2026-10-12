@@ -20,18 +20,18 @@ describe('PhoneHub protected API',()=>{
  });
  it('refuses guest cart updates and order creation',async()=>{
   const api=createPhoneHubApi({...base,fetcher:vi.fn()});
-  await expect(api.createPendingOrder({name:'Test',phone:'0712345678',city:'Nairobi',address:'Westlands'})).rejects.toThrow('Login required');
+  await expect(api.createPendingOrder({name:'Test',phone:'0712345678',zoneId:productId,address:'Westlands'})).rejects.toThrow('Login required');
   expect(() => api.removeCartItem(cartId)).toThrow('Login required');
  });
  it('does not accept client-supplied totals or paid statuses at checkout',async()=>{
   const mock=vi.fn(async()=>ok([{order_id:cartId,total_kes:999}]));
   const api=createPhoneHubApi({...base,fetcher:mock},'customer-jwt');
-  const result=await api.createPendingOrder({name:'Mary',phone:'0712345678',city:'Nairobi',address:'CBD'});
+  const result=await api.createPendingOrder({name:'Mary',phone:'0712345678',zoneId:productId,address:'CBD'});
   expect(result.total_kes).toBe(999);
   const [url,options]=mock.mock.calls[0] as unknown as [URL,RequestInit];
   expect(url.pathname).toBe('/rest/v1/rpc/phonehub_create_pending_order');
   expect(JSON.parse(options.body as string)).toEqual({
-   p_name:'Mary',p_phone:'0712345678',p_city:'Nairobi',p_address:'CBD'
+   p_name:'Mary',p_phone:'0712345678',p_zoneId:productId,p_address:'CBD'
   });
   expect((options.headers as Record<string,string>)['Authorization']).toBe('Bearer customer-jwt');
  });
@@ -51,6 +51,22 @@ describe('PhoneHub protected API',()=>{
    .rejects.toBeInstanceOf(PhoneHubApiError);
  });
 });
+
+ it('only lists enabled shipping destinations for shoppers',async()=>{
+  const mock=vi.fn(async()=>ok([]));
+  const api=createPhoneHubApi({...base,fetcher:mock});
+  await api.deliveryZones();
+  const [url]=mock.mock.calls[0] as unknown as [URL,RequestInit];
+  expect(url.pathname).toBe('/rest/v1/delivery_zones');
+  expect(url.searchParams.get('is_enabled')).toBe('eq.true');
+ });
+ it('requires admin login for shipping management and forwards database authorization',async()=>{
+  const mock=vi.fn(async()=>Response.json({message:'access denied'},{status:403}));
+  const guest=createPhoneHubApi({...base,fetcher:mock});
+  await expect(guest.addDeliveryZone({code:'nairobi',name:'Nairobi',fee_kes:350,estimated_days:2,is_enabled:false})).rejects.toThrow('Login required');
+  const account=createPhoneHubApi({...base,fetcher:mock},'nonadmin-jwt');
+  await expect(account.addDeliveryZone({code:'nairobi',name:'Nairobi',fee_kes:350,estimated_days:2,is_enabled:false})).rejects.toBeInstanceOf(PhoneHubApiError);
+ });
 
 describe('PhoneHub passwordless auth',()=>{
  it('requests an email OTP without storing a password or token',async()=>{
