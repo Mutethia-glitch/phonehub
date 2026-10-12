@@ -1,0 +1,27 @@
+name: PhoneHub checks
+on:
+  push:
+    branches: [main, "backend/**"]
+  pull_request:
+    branches: [main, 'backend/**']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Lint backend (legacy frontend formatting tracked separately)
+        run: bunx eslint src/lib/phonehub src/test/phonehub-backend.test.ts --rule 'prettier/prettier:off'
+      - name: TypeScript type-check
+        run: bunx tsc --noEmit
+      - name: Test
+        run: bun run test
+      - name: Production build
+        run: bun run build
