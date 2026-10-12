@@ -16,7 +16,7 @@ export function AdminDashboard(){
  const [error,setError]=useState<string|null>(null),[page,setPage]=useState('Overview');
  const [items,setItems]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([]);
  const [edit,setEdit]=useState<(ProductInput & {id?:string})|null>(null),[saving,setSaving]=useState(false);
- const api=useMemo(()=>store.accessToken&&store.configured?createPhoneHubApi({url:import.meta.env.VITE_SUPABASE_URL as string,anonKey:import.meta.env.VITE_SUPABASE_ANON_KEY as string},store.accessToken):null,[store.accessToken,store.configured]);
+ const api=useMemo(()=>store.accessToken&&store.configured?createPhoneHubApi({url:import.meta.env['VITE_SUPABASE_URL'] as string,anonKey:import.meta.env['VITE_SUPABASE_ANON_KEY'] as string},store.accessToken):null,[store.accessToken,store.configured]);
  useEffect(()=>{
    let active=true;
    if(!api){setAllowed(false);setChecking(false);setItems([]);setOrders([]);return;}
