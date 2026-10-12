@@ -31,7 +31,7 @@ describe('PhoneHub protected API',()=>{
   const [url,options]=mock.mock.calls[0] as unknown as [URL,RequestInit];
   expect(url.pathname).toBe('/rest/v1/rpc/phonehub_create_pending_order');
   expect(JSON.parse(options.body as string)).toEqual({
-   p_name:'Mary',p_phone:'0712345678',p_zoneId:productId,p_address:'CBD'
+   p_name:'Mary',p_phone:'0712345678',p_zone_id:productId,p_address:'CBD'
   });
   expect((options.headers as Record<string,string>)['Authorization']).toBe('Bearer customer-jwt');
  });
