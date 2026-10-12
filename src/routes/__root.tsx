@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { DemoProvider } from "@/components/phonehub/demo-store";
+import { PhoneHubProvider } from "@/components/phonehub/store-provider";
 
 function NotFoundComponent() {
   return (
@@ -121,7 +121,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <DemoProvider><Outlet /></DemoProvider>
+      <PhoneHubProvider><Outlet /></PhoneHubProvider>
     </QueryClientProvider>
   );
 }
