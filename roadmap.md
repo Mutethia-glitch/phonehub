@@ -13,7 +13,7 @@
 - [x] Server-trusted pending-order creation function (does not charge cards)
 - [x] Backend REST adapter and passwordless email Auth helpers committed
 - [x] Add API-unit test cases and setup docs
-- [ ] Apply second checkout snapshot hardening migration and verify
+- [x] Apply second checkout snapshot hardening migration
 - [ ] Execute full tests/build (no live build runner configured yet)
 - [ ] Confirm external Supabase project URL/public key to connect GitHub deployment
 - [ ] Implement complete persistent customer session handling and wire email OTP to frontend
