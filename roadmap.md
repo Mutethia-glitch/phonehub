@@ -42,3 +42,16 @@
 - [x] Disable customer checkout until verified provider integration
 - [ ] Connect new Supabase project; verify empty inventory and RLS with two real test accounts
 - [ ] Merge reviewed branch and deploy to hosting
+
+## Admin readiness while client prepares Supabase
+- [x] Add delivery-zone schema, admin-only RLS rules and disabled-by-default destinations (migration 003)
+- [x] Replace flat-rate assumption in unpaid order creation with server-priced delivery zones (migration 003)
+- [x] Add admin CRUD for delivery zones and image upload control
+- [x] Restrict uploaded images to JPG/PNG/WebP, max 5 MiB, with admin-only writes and public photo reads
+- [x] Add image upload, shipping API and permission tests
+- [x] Document independent Supabase provisioning, environment variables and hosting checklist
+- [ ] Apply all migrations to the client-owned Supabase project when available
+- [ ] Test storage policies and delivery fees against real Supabase sessions in staging
+- [ ] Confirm platform deployment target and complete server-side session persistence
+- [ ] Validate and approve actual stock, prices, delivery coverage and brand assets
+- [ ] Keep payments disabled until merchant details and webhook implementation are verified
