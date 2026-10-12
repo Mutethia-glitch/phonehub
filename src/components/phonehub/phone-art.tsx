@@ -1,0 +1,4 @@
+import type { Product, Tone } from './demo-store';
+export function PhoneArt({product,tone,mini=false}:{product:Product;tone:Tone;mini?:boolean}) {
+ return <div className={`phone-scene ${product.shape} tone-${tone}${mini?' mini':''}`} role="img" aria-label={`${product.name}, ${tone} illustrative device render`}><div className="phone-back"><div className="camera-array"><i className="camera-lens"/><i className="camera-lens"/>{product.shape!=='oppo'&&<i className="camera-lens"/>}<i className="camera-flash"/></div><span className="phone-maker">{product.brand==='Xiaomi/Redmi'?'Redmi':product.brand}</span></div><div className="phone-front"/></div>;
+}
