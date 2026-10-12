@@ -3,9 +3,9 @@
 ## Current status (13 October 2026)
 
 - **Existing frontend:** approved Lovable preview. No redesign or live payment behavior has been introduced.
-- **GitHub branch:** `backend/phase-1-schema`.
+- **GitHub branch:** `backend/independent-supabase-no-demo`.
 - **Database:** Lovable-managed Supabase Postgres was provisioned, and migration `202610130001_phonehub_core.sql` was applied and inspected (7 RLS-protected tables). `202610130002_checkout_snapshot.sql` was also applied, adding a locked cart snapshot and reducing profile update privileges.
-- **API:** `src/lib/phonehub/backend-api.ts` implements typed read and write methods over Supabase PostgREST with JWT-based RLS; `src/lib/phonehub/auth-api.ts` supports passwordless email OTP verification, refresh and logout. These API modules are **not yet wired to storefront components**, and the current UI remains demo-only.
+- **API:** `src/lib/phonehub/backend-api.ts` implements typed read and write methods over Supabase PostgREST with JWT-based RLS; `src/lib/phonehub/auth-api.ts` supports passwordless email OTP verification, refresh and logout. The adapters are connected to the customer storefront on the no-demo branch. Checkout remains disabled until the verified payment provider is ready.
 - **Payments:** no live Stripe or Paystack keys, charges, or webhooks. Pending-order RPC does NOT process payments or mark orders paid.
 
 ## Connecting a GitHub deployment to Supabase
@@ -37,7 +37,7 @@ values ('REPLACE_WITH_VERIFIED_AUTH_USER_UUID'::uuid, 'admin')
 on conflict (user_id) do update set role = excluded.role;
 ```
 
-Never create an admin automatically based on the first signup, a hardcoded email, or a client-supplied `role`. No customer is authorized to insert/update `staff_roles` through RLS. Before connecting the real admin dashboard, enforce both authenticated role validation and RLS on every sensitive data request. The current demo `/admin` route is not authenticated and contains only mock data, so **do not connect real data there until guarded**.
+Never create an admin automatically based on the first signup, a hardcoded email, or a client-supplied `role`. No customer is authorized to insert/update `staff_roles` through RLS. Before connecting the real admin dashboard, enforce both authenticated role validation and RLS on every sensitive data request. The no-demo admin UI checks the authenticated staff role before loading products or orders. RLS is the authoritative data-access boundary; add a server-side route guard before public launch.
 
 ## Catalog, orders and card handling
 
@@ -53,3 +53,9 @@ Product inventory starts empty and unpublished. Create real products through aut
 6. Test user isolation, RLS admin restrictions, checkout concurrency, authentication, success/failure webhooks, and deployment.
 
 **DO NOT launch the demo checkout as a real payment system.**
+
+## Independent Supabase cutover
+
+Create a **new Supabase project under the client-owned organization**, ideally named PhoneHub. Do not reuse the previously enabled Lovable-managed Supabase instance. In the new Supabase SQL editor, apply `202610130001_phonehub_core.sql` and `202610130002_checkout_snapshot.sql` in that order. Keep the catalog empty until the merchant supplies real phones and verified stock/prices. There is no legitimate demo customer, demo payment or seeded order data to copy.
+
+Set Auth → URL Configuration for the final website domain and the passwordless email template to include `{{ .Token }}`. Use a dedicated email sender for production OTP delivery. Invite the developer to the client-owned Supabase organization using a scoped role; do not share the owner password. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` only through deployment environment settings, never a service role or payment gateway secret. The storefront deliberately remains empty when those variables are unset. Never infer payment success from the browser.
