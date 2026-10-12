@@ -4,7 +4,7 @@
 
 - **Existing frontend:** approved Lovable preview. No redesign or live payment behavior has been introduced.
 - **GitHub branch:** `backend/phase-1-schema`.
-- **Database:** Lovable-managed Supabase Postgres was provisioned, and migration `202610130001_phonehub_core.sql` was applied and inspected (7 RLS-protected tables). `202610130002_checkout_snapshot.sql` is committed but may need to be applied: verify it before calling phase 1 complete.
+- **Database:** Lovable-managed Supabase Postgres was provisioned, and migration `202610130001_phonehub_core.sql` was applied and inspected (7 RLS-protected tables). `202610130002_checkout_snapshot.sql` was also applied, adding a locked cart snapshot and reducing profile update privileges.
 - **API:** `src/lib/phonehub/backend-api.ts` implements typed read and write methods over Supabase PostgREST with JWT-based RLS; `src/lib/phonehub/auth-api.ts` supports passwordless email OTP verification, refresh and logout. These API modules are **not yet wired to storefront components**, and the current UI remains demo-only.
 - **Payments:** no live Stripe or Paystack keys, charges, or webhooks. Pending-order RPC does NOT process payments or mark orders paid.
 
