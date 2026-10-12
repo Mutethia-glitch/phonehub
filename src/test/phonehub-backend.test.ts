@@ -21,7 +21,7 @@ describe('PhoneHub protected API',()=>{
  it('refuses guest cart updates and order creation',async()=>{
   const api=createPhoneHubApi({...base,fetcher:vi.fn()});
   await expect(api.createPendingOrder({name:'Test',phone:'0712345678',city:'Nairobi',address:'Westlands'})).rejects.toThrow('Login required');
-  await expect(api.removeCartItem(cartId)).rejects.toThrow('Login required');
+  expect(() => api.removeCartItem(cartId)).toThrow('Login required');
  });
  it('does not accept client-supplied totals or paid statuses at checkout',async()=>{
   const mock=vi.fn(async()=>ok([{order_id:cartId,total_kes:999}]));
