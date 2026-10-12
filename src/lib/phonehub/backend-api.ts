@@ -7,7 +7,9 @@ export type Product = { id: string; slug: string; brand: string; name: string; p
 export type CartItem = { id: string; product_id: string; color: string; quantity: number; products: Product|null };
 export type PendingOrder = { order_id: string; total_kes: number };
 export type Order = { id: string; user_id: string; customer_email: string|null; customer_name: string; delivery_city: string; total_kes: number; status: string; created_at: string; order_items: Array<{ product_name: string; quantity: number; color: string; unit_price_kes: number }> };
-export type Delivery = { name: string; phone: string; city: string; address: string };
+export type Delivery = { name: string; phone: string; zoneId: string; address: string };
+export type DeliveryZone = { id: string; code: string; name: string; fee_kes: number; estimated_days: number | null; is_enabled: boolean; created_at: string };
+export type DeliveryZoneInput = Pick<DeliveryZone, 'code' | 'name' | 'fee_kes' | 'estimated_days' | 'is_enabled'>;
 export type ProductInput = Omit<Product,'id'>;
 
 export class PhoneHubApiError extends Error {
@@ -42,6 +44,8 @@ export function createPhoneHubApi(config: PhoneHubConfig, accessToken?: string) 
   const withId = (id:string) => { if (!uuid.test(id)) throw new Error('Invalid ID'); return id; };
   return {
     products: () => request<Product[]>('/rest/v1/products?select=*&is_published=eq.true&order=name.asc'),
+    deliveryZones: () => request<DeliveryZone[]>('/rest/v1/delivery_zones?select=*&is_enabled=eq.true&order=name.asc'),
+    adminDeliveryZones: () => { requireLogin(); return request<DeliveryZone[]>('/rest/v1/delivery_zones?select=*&order=name.asc'); },
     adminProducts: () => { requireLogin(); return request<Product[]>('/rest/v1/products?select=*&order=created_at.desc'); },
     currentUser: () => { requireLogin(); return request<{ id:string; email:string }>('/auth/v1/user'); },
     isAdmin: () => { requireLogin(); return request<boolean>('/rest/v1/rpc/is_phonehub_admin','POST',{}); },
@@ -59,13 +63,26 @@ export function createPhoneHubApi(config: PhoneHubConfig, accessToken?: string) 
     async createPendingOrder(data:Delivery):Promise<PendingOrder> {
       requireLogin();
       const rows = await request<PendingOrder[]>('/rest/v1/rpc/phonehub_create_pending_order','POST',{
-        p_name:data.name,p_phone:data.phone,p_city:data.city,p_address:data.address
+        p_name:data.name,p_phone:data.phone,p_address:data.address,p_zone_id:withId(data.zoneId)
       });
       if (!rows[0]) throw new Error('Pending order not created');
       return rows[0];
     },
     myOrders: () => { requireLogin(); return request<Order[]>('/rest/v1/orders?select=*,order_items(*)&order=created_at.desc'); },
     adminOrders: () => { requireLogin(); return request<Order[]>('/rest/v1/orders?select=*,order_items(*)&order=created_at.desc'); },
+    async addDeliveryZone(input: DeliveryZoneInput): Promise<DeliveryZone> {
+      requireLogin();
+      const rows = await request<DeliveryZone[]>('/rest/v1/delivery_zones?select=*', 'POST', input, 'return=representation');
+      if (!rows[0]) throw new Error('Delivery zone was not saved');
+      return rows[0];
+    },
+    async updateDeliveryZone(id:string, changes:Partial<DeliveryZoneInput>):Promise<DeliveryZone> {
+      requireLogin();
+      const rows = await request<DeliveryZone[]>('/rest/v1/delivery_zones?id=eq.'+withId(id)+'&select=*',
+        'PATCH', changes, 'return=representation');
+      if (!rows[0]) throw new Error('Delivery zone not found or access denied');
+      return rows[0];
+    },
     async addAdminProduct(input:ProductInput):Promise<Product> {
       requireLogin();
       const rows = await request<Product[]>('/rest/v1/products?select=*','POST',input,'return=representation');
