@@ -13,10 +13,10 @@ describe('PhoneHub protected API',()=>{
   const mock=vi.fn(async()=>ok([]));
   const api=createPhoneHubApi({...base,fetcher:mock});
   expect(await api.products()).toEqual([]);
-  const [url,options]=mock.mock.calls[0] as [URL,RequestInit];
+  const [url,options]=mock.mock.calls[0] as unknown as [URL,RequestInit];
   expect(url.pathname).toBe('/rest/v1/products');
   expect(url.searchParams.get('is_published')).toBe('eq.true');
-  expect((options.headers as Record<string,string>).apikey).toBe('public-test-key');
+  expect((options.headers as Record<string,string>)['apikey']).toBe('public-test-key');
  });
  it('refuses guest cart updates and order creation',async()=>{
   const api=createPhoneHubApi({...base,fetcher:vi.fn()});
@@ -28,19 +28,19 @@ describe('PhoneHub protected API',()=>{
   const api=createPhoneHubApi({...base,fetcher:mock},'customer-jwt');
   const result=await api.createPendingOrder({name:'Mary',phone:'0712345678',city:'Nairobi',address:'CBD'});
   expect(result.total_kes).toBe(999);
-  const [url,options]=mock.mock.calls[0] as [URL,RequestInit];
+  const [url,options]=mock.mock.calls[0] as unknown as [URL,RequestInit];
   expect(url.pathname).toBe('/rest/v1/rpc/phonehub_create_pending_order');
   expect(JSON.parse(options.body as string)).toEqual({
    p_name:'Mary',p_phone:'0712345678',p_city:'Nairobi',p_address:'CBD'
   });
-  expect((options.headers as Record<string,string>).Authorization).toBe('Bearer customer-jwt');
+  expect((options.headers as Record<string,string>)['Authorization']).toBe('Bearer customer-jwt');
  });
  it('uses customer-scoped cart upsert and rejects invalid quantities',async()=>{
   const mock=vi.fn(async()=>ok([{id:cartId,product_id:productId,color:'black',quantity:2,products:null}]));
   const api=createPhoneHubApi({...base,fetcher:mock},'customer-jwt');
   await expect(api.setCartItem(userId,productId,'black',21)).rejects.toThrow('Invalid quantity');
   await api.setCartItem(userId,productId,'black',2);
-  const [url,options]=mock.mock.calls[0] as [URL,RequestInit];
+  const [url,options]=mock.mock.calls[0] as unknown as [URL,RequestInit];
   expect(url.searchParams.get('on_conflict')).toBe('user_id,product_id,color');
   expect(JSON.parse(options.body as string)).toEqual({user_id:userId,product_id:productId,color:'black',quantity:2});
  });
@@ -57,7 +57,7 @@ describe('PhoneHub passwordless auth',()=>{
   const mock=vi.fn(async()=>ok({}));
   const auth=createPhoneHubAuth({...base,fetcher:mock});
   await auth.requestEmailCode(' Foo@Example.COM ');
-  const [url,options]=mock.mock.calls[0] as [URL,RequestInit];
+  const [url,options]=mock.mock.calls[0] as unknown as [URL,RequestInit];
   expect(url.pathname).toBe('/auth/v1/otp');
   expect(JSON.parse(options.body as string).email).toBe('foo@example.com');
  });
